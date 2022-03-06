@@ -8,13 +8,20 @@ from selenium.webdriver.chrome.options import Options
 
 
 def ex_price(driver):
-    exist_result = {}
+    exist_result = []
     driver.find_element(By.ID, value='priceBody')
     exist_price_body = driver.find_element(By.CLASS_NAME, value='table-body')
     exist_allOffers = exist_price_body.find_element(By.CLASS_NAME, value='allOffers')
+    exist_brend = exist_price_body.find_element(By.CLASS_NAME, value='art')
+    exist_type = exist_price_body.find_element(By.CLASS_NAME, value='descr')
     exist_delivery = exist_allOffers.find_element(By.CLASS_NAME, value='statis')
     exist_price = exist_allOffers.find_element(By.CLASS_NAME, value='price')
-    exist_result[exist_price.text] = exist_delivery.text
+    print (exist_brend.text)
+    exist_result.append(exist_brend.text)
+    exist_result.append(exist_type.text)
+    exist_result.append(exist_price.text)
+    exist_result.append(exist_delivery.text)
+
     return (exist_result)
 
 def catalog(driver):
@@ -49,5 +56,5 @@ def exist_parser(part_number):
 
 
 
-part_number = '9117175'
+part_number = '164005420R'
 print(exist_parser(part_number))
