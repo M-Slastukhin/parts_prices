@@ -10,8 +10,9 @@ def exist_parser(part_number):
     options = Options()
     options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
-    exist_url = "https://www.exist.ru/Price/?pcode=164005420R"
+    exist_url = "https://www.exist.ru/"
     driver.get(exist_url)
+    driver.find_element(By.ID, value='pcode').send_keys(part_number + Keys.ENTER)
     exist_price_body = driver.find_element(By.CLASS_NAME, value='table-body')
     exist_allOffers = exist_price_body.find_element(By.CLASS_NAME, value='allOffers')
     exist_delivery = exist_allOffers.find_element(By.CLASS_NAME, value='statis')
