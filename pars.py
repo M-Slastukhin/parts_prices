@@ -24,14 +24,21 @@ def ex_price(driver):
     return (exist_result)
 
 def catalog(driver):
-    exist_catalog = driver.find_element(By.CLASS_NAME, value='catalogs')
+    brands_catalogs = []
+    options = []
+    links = []
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    hah = soup.h1
-    catalogs = soup.find_all(class_ = 'catalogs')
-    #links = catalogs.find_all('a')
-    #for link in soup.find_all(ul class_ = 'catalogs'):
-    print(hah)
-    #return links
+    catalogs = soup.find(class_ = 'catalogs')
+    all_catalogs = catalogs.find_all('a')
+    for catalog in all_catalogs:
+        links.append(catalog.get('href'))
+    all_b = catalogs.find_all('b')
+    for b in all_b:
+        brands_catalogs.append(b.text.strip())
+    all_dd = catalogs.find_all('dd')
+    for dd in all_dd:
+        options.append(dd.text.strip())
+    return brands_catalogs, options, links
 
 def exist_parser(part_number):
     options = Options()
@@ -55,9 +62,10 @@ def exist_parser(part_number):
 part_number = ''
 print('примеры для отладки')
 print('фильтр топливный 16 40 054 20R')
-print('лампа 9117175')
+print('лампа 9117175 выбор каталога' )
 print('------------------------------')
 
 print('введите номер для поиска:')
 part_number =input()
+#part_number = 9117175
 print(exist_parser(part_number))
