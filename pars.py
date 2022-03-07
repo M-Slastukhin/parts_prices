@@ -24,36 +24,40 @@ def ex_price(driver):
     return (exist_result)
 
 def catalog(driver):
-    #code = driver.read()
     exist_catalog = driver.find_element(By.CLASS_NAME, value='catalogs')
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    links = soup.findAll('a')
-
-    return links
+    hah = soup.h1
+    catalogs = soup.find_all(class_ = 'catalogs')
+    #links = catalogs.find_all('a')
+    #for link in soup.find_all(ul class_ = 'catalogs'):
+    print(hah)
+    #return links
 
 def exist_parser(part_number):
-    #exist_result = {}
     options = Options()
     options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
     exist_url = "https://www.exist.ru/"
     driver.get(exist_url)
     driver.find_element(By.ID, value='pcode').send_keys(part_number + Keys.ENTER)
-    exist_content_inner = driver.find_element(By.CLASS_NAME, value='content')
-    content_inner = exist_content_inner.text
-    found = content_inner.find('Предложения для')
-    choose_catalog = content_inner.find('Выберите каталог')
-    not_found = content_inner.find('По вашему запросу ничего не найдено')
-    if not_found != -1:
-        exist_result = 'По вашему запросу ничего не найдено'
-    elif choose_catalog != -1:
-        exist_result = catalog(driver)
-    elif found != -1:
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    header = soup.h1
+    header = header.text.strip()
+    if header.find('Предложения для') != -1:
         exist_result = ex_price(driver)
+    elif header.find('Выберите каталог') != -1:
+        exist_result = catalog(driver)
+    else:
+        exist_result = 'По вашему запросу ничего не найдено'
     return exist_result
 
 
+part_number = ''
+print('примеры для отладки')
+print('фильтр топливный 16 40 054 20R')
+print('лампа 9117175')
+print('------------------------------')
 
-
-part_number = '164005420R'
+print('введите номер для поиска:')
+part_number =input()
 print(exist_parser(part_number))
