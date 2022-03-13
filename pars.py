@@ -41,21 +41,21 @@ def catalog(driver):
     return brands_catalogs, options, links
 
 def exist_parser(part_number):
-    options = Options()
+    options = Options()                             #запуск Chromedriver
     options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
     exist_url = "https://www.exist.ru/"
-    driver.get(exist_url)
-    driver.find_element(By.ID, value='pcode').send_keys(part_number + Keys.ENTER)
+    driver.get(exist_url)pu
+    driver.find_element(By.ID, value='pcode').send_keys(part_number + Keys.ENTER)   #поиск part_number на сайте
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    header = soup.h1
+    header = soup.h1                                                                #поиск заголовка на полученой странице
     header = header.text.strip()
-    if header.find('Предложения для') != -1:
+    if header.find('Предложения для') != -1:                                        # если part_number найден запускаем ex_price() для получения цены, наименования и сроков поставки
         exist_result = ex_price(driver)
-    elif header.find('Выберите каталог') != -1:
-        exist_result = catalog(driver)
+    elif header.find('Выберите каталог') != -1:                                     # если part_number существует в нескольких каталогах запускаем catalog() для выбора каталога
+        possible_catalogs = catalog(driver)
     else:
-        exist_result = 'По вашему запросу ничего не найдено'
+        exist_result = 'По вашему запросу ничего не найдено'                        # если part_number не найден
     return exist_result
 
 
@@ -67,5 +67,4 @@ print('------------------------------')
 
 print('введите номер для поиска:')
 part_number =input()
-#part_number = 9117175
 print(exist_parser(part_number))
