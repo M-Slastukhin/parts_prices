@@ -1,9 +1,20 @@
+import time
+from telnetlib import EC
+
 from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
+from selenium.common.exceptions import ElementNotVisibleException, ElementNotSelectableException, StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+import logging
+
+
+from telegram import Update, ForceReply
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 
 
@@ -40,12 +51,33 @@ def catalog(driver):
         options.append(dd.text.strip())
     return brands_catalogs, options, links
 
-def exist_parser(part_number):
-    options = Options()                             #запуск Chromedriver
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
+def change_office(driver, city):
+    # options = Options()                             запуск Chromedriver
+    # options.add_argument('--headless')
+    driver = webdriver.Chrome()  # (options=options)
     exist_url = "https://www.exist.ru/"
-    driver.get(exist_url)pu
+    driver.get(exist_url)
+    # выберем нужный город
+    # офис выбраный автоматически загружается позже основной страницы
+    # ожидание 10секунд, частота проверки 1с, игнорируем ошибки
+    wait = WebDriverWait(driver, 10, poll_frequency=1,
+                         ignored_exceptions=[ElementNotVisibleException, ElementNotSelectableException,
+                                             StaleElementReferenceException])
+    office = wait.until(EC.element_to_be_clickable((By.XPATH,
+                                                    '/html/body/div[1]/header/section[1]/div/div[2]/span/div[1]/span/a')))  # ждать пока элемент выбора офиса станет доступным
+    office.click()  # нажать на выбор офиса
+    driver.switch_to.frame(0)  # перейти на модальное окно
+    change = wait.until(EC.element_to_be_clickable((By.XPATH,
+                                                    '/html/body/form/table/tbody/tr/td/div/div[1]/a[1]')))  # ждать пока элемент "изменить" станет доступным
+    change.click()  # нажать изменить
+    city_search = wait.until(EC.element_to_be_clickable((By.XPATH,
+                                                         '/html/body/form/table/tbody/tr/td/div[2]/div[6]/ymaps/ymaps[5]/ymaps[1]/ymaps[2]/ymaps/ymaps/ymaps[1]/ymaps/ymaps/ymaps/ymaps[1]/ymaps/ymaps[2]/input')))
+    city_search.send_keys(city + Keys.ENTER) # найти поле ввода и ввести туда название города
+    time.sleep(11)
+    driver.switch_to.default_content() # переключиться на основную страницу
+    return exist_parser(driver, part_number)
+
+def exist_parser(driver, part_number):
     driver.find_element(By.ID, value='pcode').send_keys(part_number + Keys.ENTER)   #поиск part_number на сайте
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     header = soup.h1                                                                #поиск заголовка на полученой странице
@@ -58,13 +90,14 @@ def exist_parser(part_number):
         exist_result = 'По вашему запросу ничего не найдено'                        # если part_number не найден
     return exist_result
 
-
-part_number = ''
+city = 'Самара'
+part_number = '164005420R'
 print('примеры для отладки')
 print('фильтр топливный 16 40 054 20R')
 print('лампа 9117175 выбор каталога' )
 print('------------------------------')
-
-print('введите номер для поиска:')
-part_number =input()
-print(exist_parser(part_number))
+#print('введите ваш город:')
+#city = input ()
+#print('введите номер для поиска:')
+#part_number =input()
+print(change_office(part_number, city))
